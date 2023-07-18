@@ -23,10 +23,6 @@ $ pip install opencv-python
 		$ pip uninstall torch
 		$ conda install pytorch cudatoolkit=11.3 -c pytorch
 
-7) install bokeh 
-$ pip install jupyter_bokeh
-$ pip install bokeh 
-
 
 8) add the new enviroment to jupyter lab path  
 $ ipython kernel install --name imagespot --user
