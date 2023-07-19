@@ -367,7 +367,7 @@ def detect_tissue_otsu(
     j = open(path+'imagespot_preprocessing/spatial/scalefactors_json.json'); data = json.load(j)
     tissue_lowres_scalef = data['tissue_lowres_scalef'] # Opening imaging metadata file
     spot_diameter_fullres = data['spot_diameter_fullres'] # Opening imaging metadata file
-    img = io.imread(path+'imagespot_preprocessing/spatial/tissue_lowres_image.png')
+    img = np.array(Image.open(path+'imagespot_preprocessing/spatial/tissue_lowres_image.png'))
     SSMTTarget = genfromtxt(path+'imagespot_preprocessing/SSMTTarget.csv', delimiter=',')      
 #     x = 0
     SSMTTarget = SSMTTarget*tissue_lowres_scalef
@@ -409,7 +409,7 @@ def detect_tissue_otsu(
     plt.show()
     if Correcth5:
         AnnVis = sc.read_visium(path+'imagespot_preprocessing/',count_file='raw_feature_bc_matrix.h5')
-        img5k = io.imread(path+'imagespot_preprocessing/spatial/tissue_hires5K_image.png')
+        img5k = np.array(Image.open(path+'imagespot_preprocessing/spatial/tissue_hires5K_image.png'))
         sample = list(AnnVis.uns['spatial'].keys())
         AnnVis.uns['spatial'][sample[0]]['images']['hires5K'] = img5k
         AnnVis.write_h5ad(path+'imagespot_preprocessing/corrected_raw_adata.h5ad')
@@ -1810,3 +1810,23 @@ def get_properties_2d(im_cell, im):
     dfseg_nuc = dfseg_nuc.drop(columns=['texture_features', 'fourier_descriptors'])
 
     return dfseg_nuc
+
+
+def read_visium_table(vis_path):
+    """
+    This function reads a scale factor from a json file and a table from a csv file, 
+    then calculates the 'ppm' value and returns the table with the new column names.
+    
+    note that for CytAssist the header is changes so this funciton should be updated
+    """
+    with open(vis_path + '/spatial/scalefactors_json.json', 'r') as f:
+        scalef = json.load(f)
+
+    ppm = scalef['spot_diameter_fullres'] / 55 
+
+    df_visium_spot = pd.read_csv(vis_path + '/spatial/tissue_positions_list.csv', header=None)
+
+    df_visium_spot.rename(columns={4:'y',5:'x',1:'in_tissue',0:'barcode'}, inplace=True)
+    df_visium_spot.set_index('barcode', inplace=True)
+
+    return df_visium_spot, ppm
