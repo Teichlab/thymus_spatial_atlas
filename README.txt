@@ -1,29 +1,8 @@
 
-In order to run this you need to setup an imagespot environment as follows 
-Instructions for imagespot env 
+This repository hold all computational components of the human thymus spatial atlas by Yayon, Kedlian and Boehme et al 2023. 
+if you have any issues feel free to add comments and suggestions. 
+we are working on the complete data release soon and the link and metadata would appear here shortly. 
 
-1) Create a new conda environment:
-$ conda create -n imagespot python=3.9
-say 'y' when asked
-
-2) activate new environment 
-$ conda activate imagespot 
-
-3) install scanpy
-$ conda install -c conda-forge scanpy python-igraph leidenalg
-
-4) install jupyter-lab 
-$ conda install -c conda-forge jupyterlab
-
-6) install open-cv
-$ pip install opencv-python
-
-6.5) optional - install cellpose 
-		$ pip install cellpose 
-		$ pip uninstall torch
-		$ conda install pytorch cudatoolkit=11.3 -c pytorch
-
-
-8) add the new enviroment to jupyter lab path  
-$ ipython kernel install --name imagespot --user
+if you find this useful for your research please cite the preprint here - > 
+cheers 
 
