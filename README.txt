@@ -1,8 +1,19 @@
 
-This repository hold all computational components of the human thymus spatial atlas by Yayon, Kedlian and Boehme et al 2023. 
-if you have any issues feel free to add comments and suggestions. 
-we are working on the complete data release soon and the link and metadata would appear here shortly. 
+# Human Thymus Spatial Atlas
 
-if you find this useful for your research please cite the preprint here - > 
-cheers 
+This repository holds all the computational components of the Human Thymus Spatial Atlas, a collaborative project by Yayon, Kedlian, Boehme et al., 2023.
+
+## Contributing
+
+Your comments and suggestions are highly appreciated. Feel free to submit your input through our issues page.
+
+## Data Release
+
+Stay tuned for the complete data release. Detailed metadata and associated download links will be updated here soon.
+
+## Citing Our Work
+
+If you find our work useful for your research, please consider citing our preprint. The reference link will be provided shortly.
+
+Thank you for your interest in our project. Cheers!
 
