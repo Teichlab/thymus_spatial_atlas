@@ -17,4 +17,4 @@ If you find our work useful for your research, please consider citing our prepri
 
 Thank you for your interest in our project. Cheers!
 
-*disclaimer - code documentation and performance improvements were aided by ChatGPT
+*note - code documentation and performance improvements were aided by ChatGPT
