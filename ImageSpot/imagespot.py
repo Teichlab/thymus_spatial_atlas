@@ -525,12 +525,16 @@ def bin_axis(ct_order, cutoff_values, df, axis_anno_name):
     df['manual_bin_' + axis_anno_name] = 'unassigned'
     df['manual_bin_' + axis_anno_name] = df['manual_bin_' + axis_anno_name].astype('object')
     df.loc[np.array(df[axis_anno_name] < cutoff_values[0]), 'manual_bin_' + axis_anno_name] = ct_order[0]
-
+    print(ct_order[0] + '= (' + str(cutoff_values[0]) + '>' + axis_anno_name + ')')
+    
     for idx, r in enumerate(cutoff_values[:-1]):
         df.loc[np.array(df[axis_anno_name] >= cutoff_values[idx]) & np.array(df[axis_anno_name] < cutoff_values[idx+1]),
                'manual_bin_' + axis_anno_name] = ct_order[idx+1]
+        print(ct_order[idx+1] + '= (' + str(cutoff_values[idx]) + '<=' + axis_anno_name + ') & (' + str(cutoff_values[idx+1]) + '>' + axis_anno_name + ')' )
 
     df.loc[np.array(df[axis_anno_name] >= cutoff_values[-1]), 'manual_bin_' + axis_anno_name] = ct_order[-1]
+    print(ct_order[-1] + '= (' + str(cutoff_values[-1]) + '=<' + axis_anno_name + ')')
+
     df['manual_bin_' + axis_anno_name] = df['manual_bin_' + axis_anno_name].astype('category')
     df['manual_bin_' + axis_anno_name + '_int'] = df['manual_bin_' + axis_anno_name].cat.codes
 
@@ -1678,138 +1682,6 @@ def map_annotations_to_target(df_source, df_target, ppm_source,ppm_target, plot=
 
 
 
-import time
-import math
-from skimage import measure
-from skimage.feature import graycomatrix, graycoprops
-from scipy import fftpack
-import numpy as np
-import pandas as pd
-
-
-def texture_features(regionmask, intensity_image):
-    a = intensity_image.copy()
-    a[regionmask] = 0
-    b = intensity_image.copy()
-    b = b - a
-    angles = (0, np.pi / 4, np.pi / 2, 3 * np.pi / 4)
-    props = ("contrast", "dissimilarity", "homogeneity", "correlation", "ASM")
-    distances = (1,)
-    features = {}
-    
-    comatrix = graycomatrix(b.astype(np.uint8), distances=distances, angles=angles, levels=256)
-    for p in props:
-        tmp_features = graycoprops(comatrix, prop=p)
-        for d_idx, dist in enumerate(distances):
-            for a_idx, a in enumerate(angles):
-                features[f"{'texture'}_{p}_dist-{dist}_angle-{a:.2f}"] = tmp_features[d_idx, a_idx]
-    return features
-
-
-# def get_properties_2d(im_cell, im):
-#     start_time = time.time()
-#     # Standard properties
-#     props = ('label', 'centroid', 'area', 'perimeter', 'eccentricity', 'equivalent_diameter', 'major_axis_length', 'minor_axis_length', 'orientation')
-#     data = measure.regionprops_table(
-#         label_image=im_cell,
-#         intensity_image=im,
-#         properties=props,
-#         cache=True,
-#         separator='-'
-#     )
-#     print("Standard properties: --- %s seconds ---" % (time.time() - start_time))
-
-#     # Texture features
-#     start_time = time.time()
-#     data.update(measure.regionprops_table(
-#         label_image=im_cell,
-#         intensity_image=im,
-#         properties=(),
-#         extra_properties=[texture_features],
-#         cache=True,
-#         separator='-'
-#     ))
-#     print("Texture features: --- %s seconds ---" % (time.time() - start_time))
-
-
-#     # Converting to DataFrame
-#     dfseg_nuc = pd.DataFrame(data=data)
-
-#     # Adding 'circularity'
-#     circularity = (4 * math.pi * dfseg_nuc['area']) / (dfseg_nuc['perimeter'] * dfseg_nuc['perimeter'])
-#     dfseg_nuc['circularity'] = circularity
-
-#     # Convert the numpy.float64 value to a dictionary
-#     texture_features_dict = {0: dfseg_nuc['texture_features'].values[0]}
-
-#     # Create the DataFrame from the dictionary
-#     TextFeatures = pd.DataFrame()
-#     for row in dfseg_nuc['texture_features']:
-#         if row:  # Check if the row is not empty
-#             row_dict = row if isinstance(row, dict) else {}
-#             TextFeatures1 = pd.DataFrame.from_dict(row_dict, orient='index').T
-#             TextFeatures = pd.concat([TextFeatures, TextFeatures1], ignore_index=True)
-            
-
-#     return dfseg_nuc
-
-
-
-
-def get_properties_2d(im_cell, im):
-    start_time = time.time()
-    # Standard properties
-    props = ('label', 'centroid', 'area', 'perimeter', 'eccentricity', 'equivalent_diameter', 'major_axis_length', 'minor_axis_length', 'orientation')
-    data = measure.regionprops_table(
-        label_image=im_cell,
-        intensity_image=im,
-        properties=props,
-        cache=True,
-        separator='-'
-    )
-    print("Standard properties: --- %s seconds ---" % (time.time() - start_time))
-
-    # Texture features
-    start_time = time.time()
-    texture_features = texture_features(im_cell, im)
-    data.update(measure.regionprops_table(
-        label_image=im_cell,
-        intensity_image=im,
-        properties=(),
-        extra_properties=[texture_features],
-        cache=True,
-        separator='-'
-    ))
-    print("Texture features: --- %s seconds ---" % (time.time() - start_time))
-
-    # Converting to DataFrame
-    dfseg_nuc = pd.DataFrame(data=data)
-
-    # Adding 'circularity'
-    circularity = (4 * math.pi * dfseg_nuc['area']) / (dfseg_nuc['perimeter'] * dfseg_nuc['perimeter'])
-    dfseg_nuc['circularity'] = circularity
-
-    # Convert the numpy.float64 value to a dictionary
-    texture_features_dict = {0: dfseg_nuc['texture_features'].values[0]}
-
-    # Create the DataFrame from the dictionary
-    TextFeatures = pd.DataFrame()
-    for row in dfseg_nuc['texture_features']:
-        if row:  # Check if the row is not empty
-            row_dict = row if isinstance(row, dict) else {}
-            TextFeatures1 = pd.DataFrame.from_dict(row_dict, orient='index').T
-            TextFeatures = pd.concat([TextFeatures, TextFeatures1], ignore_index=True)
-
-    # Parsing the Fourier descriptors to separate columns in DataFrame
-    FourierFeatures = pd.DataFrame(dfseg_nuc['fourier_descriptors'].values[0].real, columns=[f'fourier-{i}-real' for i in range(10)]).join(pd.DataFrame(dfseg_nuc['fourier_descriptors'].values[0].imag, columns=[f'fourier-{i}-imag' for i in range(10)]))
-    for row in dfseg_nuc['fourier_descriptors'].values[1::]:
-        FourierFeatures1 = pd.DataFrame(row.real, columns=[f'fourier-{i}-real' for i in range(10)]).join(pd.DataFrame(row.imag, columns=[f'fourier-{i}-imag' for i in range(10)]))
-        FourierFeatures = FourierFeatures.append(FourierFeatures1, ignore_index=True)
-
-    dfseg_nuc = pd.concat([dfseg_nuc, TextFeatures, FourierFeatures], axis=1)
-    dfseg_nuc = dfseg_nuc.drop(columns=['texture_features', 'fourier_descriptors'])
-
-    return dfseg_nuc
 
 
 def read_visium_table(vis_path):
@@ -1830,3 +1702,435 @@ def read_visium_table(vis_path):
     df_visium_spot.set_index('barcode', inplace=True)
 
     return df_visium_spot, ppm
+
+
+
+# get morphology 
+
+import math
+import time
+import numpy as np
+import pandas as pd
+from scipy import fftpack
+from skimage import measure
+from skimage.feature import graycomatrix, graycoprops, hog, local_binary_pattern
+from skimage.filters import gabor
+from skimage.util import img_as_ubyte
+from skimage.util import img_as_ubyte
+import multiprocessing as mp
+from scipy.stats import skew, kurtosis
+from scipy.fftpack import fft2
+from skimage.feature import local_binary_pattern
+from skimage.filters import gabor
+from skimage.measure import regionprops
+
+
+
+def calculate_features_for_label(label, regionmask, a, distances, angles, props):
+    mask = (regionmask == label)  # Create mask for the current cell
+    a_masked = a.copy()
+    a_masked[~mask] = 0  # Mask the intensity image
+    comatrix = graycomatrix(a_masked, distances=distances, angles=angles, levels=256)
+
+    features = {'label': label}  # Initialize features dict for the current cell
+    for p in props:
+        tmp_features = graycoprops(comatrix, prop=p).flatten()  # Flattened to handle multiple distances/angles
+        for idx, feature in enumerate(tmp_features):
+            features[f"texture_{p}_{idx}"] = feature
+    return features
+
+def texture_features(regionmask, intensity_image):
+    unique_labels = np.unique(regionmask)  # List of unique cell labels
+    unique_labels = unique_labels[unique_labels != 0]  # Exclude background (label 0)
+
+    a = img_as_ubyte(intensity_image.copy())
+    if a.shape != regionmask.shape:
+        print(f'Shapes do not match: a.shape={a.shape}, regionmask.shape={regionmask.shape}')
+        return []
+
+    angles = (0, np.pi / 4, np.pi / 3)
+    props = ("contrast", "dissimilarity", "correlation", "ASM")
+#     props = ("contrast", "energy")
+    distances = (1,)
+
+    with mp.Pool(processes=mp.cpu_count()) as pool:
+        features_list = pool.starmap(calculate_features_for_label, [(label, regionmask, a, distances, angles, props) for label in unique_labels])
+
+    return features_list
+
+
+def shape_features(im_cell,im=None):
+    labels = np.unique(im_cell)[1:]  # Exclude background label
+    shape_features_list = []
+    
+    for label in labels:
+        mask = (im_cell == label)
+        props = regionprops(mask.astype(int))[0]  # Extract properties of the region
+
+        shape_features = {'label': label,
+                          'area': props.area,
+                          'solidity': props.solidity,
+                          'perimeter': props.perimeter,
+                          'extent': props.extent,
+                          'eccentricity': props.eccentricity,
+                          'major_axis_length': props.major_axis_length,
+                          'minor_axis_length': props.minor_axis_length}
+        shape_features_list.append(shape_features)
+    
+    return shape_features_list
+
+
+
+# Intensity Features
+def intensity_features(regionmask, intensity_image):
+    unique_labels = np.unique(regionmask)
+    unique_labels = unique_labels[unique_labels != 0]  # Exclude background
+
+    intensity_features_list = []
+    for label in unique_labels:
+        mask = (regionmask == label)
+        masked_intensity = intensity_image[mask]
+        intensity_features = {'label': label,
+                              'mean_intensity': np.mean(masked_intensity),
+                              'median_intensity': np.median(masked_intensity),
+                              'std_intensity': np.std(masked_intensity),
+                              'skewness_intensity': skew(masked_intensity),
+                              'kurtosis_intensity': kurtosis(masked_intensity)}
+        intensity_features_list.append(intensity_features)
+    return intensity_features_list
+
+# Frequency-domain Features
+def frequency_features(regionmask, intensity_image):
+    props = measure.regionprops(regionmask, intensity_image)
+    frequency_features_list = []
+    for prop in props:
+        minr, minc, maxr, maxc = prop.bbox
+        masked_intensity = intensity_image[minr:maxr, minc:maxc]
+        f_transform = fft2(masked_intensity)  # Fourier Transform
+        f_spectrum = np.abs(f_transform)**2  # Power Spectrum
+        frequency_features = {'label': prop.label,
+                              'mean_spectrum': np.mean(f_spectrum),
+                              'median_spectrum': np.median(f_spectrum),
+                              'std_spectrum': np.std(f_spectrum)}
+        frequency_features_list.append(frequency_features)
+    return frequency_features_list
+
+
+# LBP Features
+def lbp_features(regionmask, intensity_image, P=8, R=1):
+    props = measure.regionprops(regionmask, intensity_image)
+    lbp_features_list = []
+    for prop in props:
+        minr, minc, maxr, maxc = prop.bbox
+        masked_intensity = intensity_image[minr:maxr, minc:maxc]
+        lbp = local_binary_pattern(masked_intensity, P, R)
+        lbp_features = {'label': prop.label,
+                        'mean_lbp': np.mean(lbp),
+                        'std_lbp': np.std(lbp)}
+        lbp_features_list.append(lbp_features)
+    return lbp_features_list
+
+
+# Gabor Features
+def gabor_features(regionmask, intensity_image, frequency=0.6):
+    props = measure.regionprops(regionmask, intensity_image)
+    gabor_features_list = []
+    for prop in props:
+        minr, minc, maxr, maxc = prop.bbox
+        masked_intensity = intensity_image[minr:maxr, minc:maxc]
+        gabor_response = gabor(masked_intensity, frequency=frequency)
+        gabor_features = {'label': prop.label,
+                          'mean_gabor': np.mean(gabor_response),
+                          'std_gabor': np.std(gabor_response)}
+        gabor_features_list.append(gabor_features)
+    return gabor_features_list
+
+
+
+def get_all_properties_2d(im_cell, im, feature_list=None):
+    """
+    Function to extract all features from 2D image.
+    Arguments:
+    im_cell -- input image
+    im -- intensities
+    feature_list -- list of features to be calculated, default is all features
+    Returns:
+    dfseg_nuc -- a dataframe of features calculated for each label
+    """
+
+    if feature_list is None:
+        feature_list = ["shape", "texture", "intensity", "frequency", "lbp", "gabor"]
+
+    # Get the labels of the cells
+    labels = np.unique(im_cell)
+    dfseg_nuc = pd.DataFrame(labels, columns=['label'])
+
+    feature_dict = {"shape": shape_features, "texture": texture_features, "intensity": intensity_features,
+                    "frequency": frequency_features, "lbp": lbp_features, "gabor": gabor_features}
+
+    for feature in feature_list:
+        if feature in feature_dict:
+            start = time.time()
+            feature_df = pd.DataFrame(feature_dict[feature](im_cell, im)).set_index('label')
+            end = time.time()
+            print(f"{feature.capitalize()} features: {end - start} seconds, {len(feature_df.columns)} features")
+            dfseg_nuc = pd.concat([dfseg_nuc, feature_df], axis=1)
+        else:
+            print(f"Invalid feature: {feature}")
+    return dfseg_nuc.reset_index()
+
+
+from collections import defaultdict
+import pandas as pd
+import numpy as np
+
+# Your features are already defined above
+# Now let's define feature_dict with your features and corresponding functions
+feature_dict = {
+    'texture': texture_features,
+    'shape': shape_features,
+    'intensity': intensity_features,
+    'frequency': frequency_features,
+    'lbp': lbp_features,
+    'gabor': gabor_features,
+    # add more features here
+}
+
+import time
+
+def get_all_properties_3d(im_cell, im, feature_list=feature_dict.keys(), dim_order='xyz'):
+    if dim_order.lower() not in ['xyz', 'zyx']:
+        raise ValueError('Invalid dim_order, choose either "xyz" or "zyx"')
+
+    z_slices = im_cell.shape[2] if dim_order.lower() == 'xyz' else im_cell.shape[0]
+    feature_dataframes = []
+
+    for z in range(z_slices):
+        if dim_order.lower() == 'zyx':
+            im_cell_slice, im_slice = im_cell[z, :, :], im[z, :, :]
+        else:  # 'xyz'
+            im_cell_slice, im_slice = im_cell[:, :, z], im[:, :, z]
+            
+        slice_labels = np.unique(im_cell_slice)
+        # Exclude background (0)
+        slice_labels = slice_labels[slice_labels != 0]
+
+        # Calculate features for each label in the slice
+        for feature in feature_list:
+            if feature in feature_dict:
+                start = time.time()
+                feature_df = pd.DataFrame(feature_dict[feature](im_cell_slice, im_slice)).set_index('label')
+                feature_df['z_slice'] = z  # add z slice information
+                end = time.time()
+                print(f"{feature.capitalize()} features for slice {z}: {end - start} seconds, {len(feature_df.columns)} features")
+
+                # Append feature dataframe for each label
+                for label in slice_labels:
+                    if label in feature_df.index:
+                        feature_dataframes.append(feature_df.loc[[label]])
+            else:
+                print(f"Invalid feature: {feature}")
+
+    # Create a multi-level index dataframe
+    multi_index_df = pd.concat(feature_dataframes)
+
+    # Compute min, max, sum, and mean of features for each label (excluding 'z_slice')
+    cols = multi_index_df.columns.difference(['z_slice'])
+    df_min = multi_index_df[cols].groupby('label').min().add_suffix('_min')
+    df_max = multi_index_df[cols].groupby('label').max().add_suffix('_max')
+    df_sum = multi_index_df[cols].groupby('label').sum().add_suffix('_sum')
+    df_mean = multi_index_df[cols].groupby('label').mean().add_suffix('_mean')
+
+    # Concatenate the min, max, sum, and mean dataframes
+    df_final = pd.concat([df_min, df_max, df_sum, df_mean], axis=1)
+
+    return df_final.reset_index()
+
+
+# def dot_plot_anno(adata, cell_type_anno, cell_calling_certainty_anno, fraction, cells, groupby, **kwargs):
+#     """
+#     Creates a dot plot with scanpy using data from an AnnData object, after applying a filter on cell calling certainty.
+
+#     Parameters
+#     ----------
+#     adata : anndata.AnnData
+#         The annotated data matrix of shape `n_obs` × `n_vars`. Rows correspond
+#         to cells and columns to genes.
+#     cell_type_anno : str
+#         The name of the column in `adata.obs` that contains the cell type annotations.
+#     cell_calling_certainty_anno : str
+#         The name of the column in `adata.obs` that contains the cell calling certainty values.
+#     fraction : float
+#         The minimum cell calling certainty to include a cell in the plot.
+#     cells : list of str
+#         The list of cell types to be plotted.
+#     groupby : str
+#         The key of the observation grouping to consider.
+#     **kwargs : dict
+#         Additional keyword arguments are passed to `scanpy.pl.dotplot`.
+
+#     Returns
+#     -------
+#     None. Displays a dot plot visualization.
+#     """
+#     adata_filt = adata[adata.obs[cell_calling_certainty_anno] > fraction]
+    
+#     # Generate a new AnnData object
+#     def generate_anndata(adata, cell_type_anno, cell_calling_certainty_anno):
+#         # Get unique cell types
+#         unique_cell_types = adata.obs[cell_type_anno].unique()
+#         # Initialize a new data array with zeros
+#         data = np.zeros((adata.shape[0], len(unique_cell_types)))
+#         # Loop over unique cell types
+#         for i, cell_type in enumerate(unique_cell_types):
+#             # Get indices where cell type is the current cell type
+#             indices = np.where(adata.obs[cell_type_anno] == cell_type)[0]
+#             # Get corresponding certainties
+#             certainties = adata.obs.iloc[indices][cell_calling_certainty_anno].values
+#             # Assign these values to the corresponding column in data
+#             data[indices, i] = certainties
+            
+#         # Create new AnnData object
+#         adata_new = ad.AnnData(X=data,
+#                                     obs=adata.obs,
+#                                     var=pd.DataFrame(index=unique_cell_types))
+#         return adata_new
+
+#     plot_adata = generate_anndata(adata_filt, cell_type_anno, cell_calling_certainty_anno)
+    
+   
+#     # Set figure parameters
+# #     sc.set_figure_params(figsize=[4,4])
+    
+#     # Create dotplot
+#     sc.pl.dotplot(plot_adata, var_names=cells, groupby=groupby, **kwargs)
+
+    
+def dot_plot_anno(adata, cell_type_anno, cell_calling_certainty_anno, fraction, cells, groupby, **kwargs):
+    """
+    Creates a dot plot with scanpy using data from an AnnData object, after applying a filter on cell calling certainty.
+
+    Parameters
+    ----------
+    adata : anndata.AnnData
+        The annotated data matrix of shape `n_obs` × `n_vars`. Rows correspond
+        to cells and columns to genes.
+    cell_type_anno : str
+        The name of the column in `adata.obs` that contains the cell type annotations.
+    cell_calling_certainty_anno : str
+        The name of the column in `adata.obs` that contains the cell calling certainty values.
+    fraction : float
+        The minimum cell calling certainty to include a cell in the plot.
+    cells : list of str
+        The list of cell types to be plotted.
+    groupby : str
+        The key of the observation grouping to consider.
+    **kwargs : dict
+        Additional keyword arguments are passed to `scanpy.pl.dotplot`.
+
+    Returns
+    -------
+    None. Displays a dot plot visualization.
+    """
+    adata_filt = adata[adata.obs[cell_calling_certainty_anno] > fraction]
+    
+    # Generate a new AnnData object
+    def generate_anndata(adata, cell_type_anno, cell_calling_certainty_anno, cells):
+        # Get unique cell types
+        unique_cell_types = list(set(cells).union(set(adata.obs[cell_type_anno].unique())))
+        # Initialize a new data array with zeros
+        data = np.zeros((adata.shape[0], len(unique_cell_types)))
+        # Loop over unique cell types
+        for i, cell_type in enumerate(unique_cell_types):
+            if cell_type in adata.obs[cell_type_anno].unique():
+                # Get indices where cell type is the current cell type
+                indices = np.where(adata.obs[cell_type_anno] == cell_type)[0]
+                # Get corresponding certainties
+                certainties = adata.obs.iloc[indices][cell_calling_certainty_anno].values
+                # Assign these values to the corresponding column in data
+                data[indices, i] = certainties
+            
+        # Create new AnnData object
+        adata_new = ad.AnnData(X=data,
+                                    obs=adata.obs,
+                                    var=pd.DataFrame(index=unique_cell_types))
+        return adata_new
+
+    plot_adata = generate_anndata(adata_filt, cell_type_anno, cell_calling_certainty_anno, cells)
+    
+    # Check if all cell types in 'cells' are present in 'plot_adata'
+    missing_cells = list(set(cells) - set(plot_adata.var_names))
+    
+    # Raise a warning if some cell types are missing
+    if missing_cells:
+        print(f"Warning: the following cell types are not found in the data and will be plotted as empty columns: {missing_cells}")
+    
+    # Set figure parameters
+    # sc.set_figure_params(figsize=[4,4])
+    
+    # Create dotplot
+    sc.pl.dotplot(plot_adata, var_names=cells, groupby=groupby, **kwargs)
+
+    
+    
+def matrix_plot_anno(adata, cell_type_anno, cell_calling_certainty_anno, fraction, cells, groupby, **kwargs):
+    """
+    Creates a matrix plot with scanpy using data from an AnnData object, after applying a filter on cell calling certainty.
+
+    Parameters
+    ----------
+    adata : anndata.AnnData
+        The annotated data matrix of shape `n_obs` × `n_vars`. Rows correspond
+        to cells and columns to genes.
+    cell_type_anno : str
+        The name of the column in `adata.obs` that contains the cell type annotations.
+    cell_calling_certainty_anno : str
+        The name of the column in `adata.obs` that contains the cell calling certainty values.
+    fraction : float
+        The minimum cell calling certainty to include a cell in the plot.
+    cells : list of str
+        The list of cell types to be plotted.
+    groupby : str
+        The key of the observation grouping to consider.
+    **kwargs : dict
+        Additional keyword arguments are passed to `scanpy.pl.matrixplot`.
+
+    Returns
+    -------
+    None. Displays a matrix plot visualization.
+    """
+    adata_filt = adata[adata.obs[cell_calling_certainty_anno] > fraction]
+    
+    # Generate a new AnnData object
+    def generate_anndata(adata, cell_type_anno, cell_calling_certainty_anno, cells):
+        # Get unique cell types
+        unique_cell_types = list(set(cells).union(set(adata.obs[cell_type_anno].unique())))
+        # Initialize a new data array with zeros
+        data = np.zeros((adata.shape[0], len(unique_cell_types)))
+        # Loop over unique cell types
+        for i, cell_type in enumerate(unique_cell_types):
+            if cell_type in adata.obs[cell_type_anno].unique():
+                # Get indices where cell type is the current cell type
+                indices = np.where(adata.obs[cell_type_anno] == cell_type)[0]
+                # Get corresponding certainties
+                certainties = adata.obs.iloc[indices][cell_calling_certainty_anno].values
+                # Assign these values to the corresponding column in data
+                data[indices, i] = certainties
+            
+        # Create new AnnData object
+        adata_new = ad.AnnData(X=data,
+                                    obs=adata.obs,
+                                    var=pd.DataFrame(index=unique_cell_types))
+        return adata_new
+
+    plot_adata = generate_anndata(adata_filt, cell_type_anno, cell_calling_certainty_anno, cells)
+    
+    # Check if all cell types in 'cells' are present in 'plot_adata'
+    missing_cells = list(set(cells) - set(plot_adata.var_names))
+    
+    # Raise a warning if some cell types are missing
+    if missing_cells:
+        print(f"Warning: the following cell types are not found in the data and will be plotted as empty columns: {missing_cells}")
+    
+    # Create matrixplot
+    sc.pl.matrixplot(plot_adata, var_names=cells, groupby=groupby, **kwargs)
