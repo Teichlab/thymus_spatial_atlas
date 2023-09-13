@@ -1,0 +1,1 @@
+This section contains the preprocessing functions used to convert IBEX .ims channel data to TIFF images using Fiji macros. Additionally, a complete analysis pipeline example for Sample 07 is provided. Identical processing pipelines were performed for all IBEX samples in this study.
