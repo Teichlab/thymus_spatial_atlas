@@ -5,7 +5,7 @@ This repository holds all the computational components of the Human Thymus Spati
 
 ## Contributing
 
-Your comments and suggestions are highly appreciated. Feel free to submit your input through our issues page.
+Your comments and suggestions are highly appreciated. Feel free to submit your input through our issues page. after a preprint is issued
 
 ## Data Release
 
