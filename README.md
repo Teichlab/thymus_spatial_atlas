@@ -1,7 +1,7 @@
 
 # Human Thymus Spatial Atlas
 
-This repository holds all the computational components of the Human Thymus Spatial Atlas, a collaborative project by Yayon, Kedlian, Boehme et al., 2023.
+This repository holds all the computational components of the Human Thymus Spatial Atlas, a collaborative project by Yayon, Kedlian, Boehme, Radtke and many more!.
 
 ## Contributing
 
