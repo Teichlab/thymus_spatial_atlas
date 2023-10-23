@@ -295,7 +295,7 @@ def align_and_extract(
         props = measure.regionprops_table(masks, img_grey_rescaled, 
                                       properties=['label','area', 'equivalent_diameter', 'perimeter', 'centroid'])
         PixelsPerMicrons = allignment_to_reference(
-            props,sensitivity=2,min_s=4,Ref_path=ref_path,
+            props,sensitivity=sensitivity,min_s=4,Ref_path=ref_path,
             scalefactors=scalefactors,path_output=path_10x+'imagespot_preprocessing/')
         generate_scale_factor(path=path_10x+'imagespot_preprocessing/spatial/',ppm=PixelsPerMicrons,scale_factors=scalefactors)
 
