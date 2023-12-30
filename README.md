@@ -13,7 +13,7 @@ Stay tuned for the complete data release. Detailed metadata and associated downl
 
 ## Citing Our Work
 
-If you find our work useful for your research, please consider citing our preprint. The reference link will be provided shortly.
+If you find our work useful for your research, please consider citing our preprint - https://www.biorxiv.org/content/10.1101/2023.10.25.562925v1
 
 Thank you for your interest in our project. Cheers!
 
