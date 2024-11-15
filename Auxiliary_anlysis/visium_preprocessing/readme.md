@@ -6,4 +6,4 @@
 4) TissueTag annotation
 5) Annotation transfer to visium (h5ad) object
 
-* note the reference datasets (found here - https://github.com/Teichlab/thymus_spatial_atlas/tree/main/ImageSpot/visiumator/reference_data ) are requiered for visiumator preprocessing  
+
