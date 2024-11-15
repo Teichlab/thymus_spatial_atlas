@@ -15,6 +15,10 @@ All datasets associated with this manuscript can be found here - (tbd soon)
 
 If you find our work useful for your research, please consider citing our manuscript here - (tbd soon)
 
+## OrganAxis model 
+
+If you want to get further details on the intuition and construction of the approach we took with TissueTag and the OrganAxis model please visit - https://organ-axis-tutorial.readthedocs.io/en/latest/index.html
+
 Thank you for your interest in our project. Cheers!
 
 *note - code documentation and performance improvements were aided by ChatGPT is selected sections
