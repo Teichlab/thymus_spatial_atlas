@@ -9,7 +9,7 @@ Your comments and suggestions are highly appreciated. Feel free to submit your i
 
 ## Data Release
 
-All datasets associated with this manuscript can be found here - (tbd soon) 
+All datasets associated with this manuscript can be found here - [data](https://cellxgene.cziscience.com/collections/fc19ae6c-d7c1-4dce-b703-62c5d52061b4)
 
 ## Citing Our Work
 
