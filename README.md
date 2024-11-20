@@ -13,7 +13,7 @@ All datasets associated with this manuscript can be found here - (tbd soon)
 
 ## Citing Our Work
 
-If you find our work useful for your research, please consider citing our manuscript here - (tbd soon)
+If you find our work useful for your research, please consider citing our manuscript here - [cite](https://www.nature.com/articles/s41586-024-07944-6)
 
 ## OrganAxis model 
 
